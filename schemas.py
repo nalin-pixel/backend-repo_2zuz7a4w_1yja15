@@ -1,48 +1,54 @@
 """
-Database Schemas
+Database Schemas for LearnMate
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model corresponds to a MongoDB collection with the
+collection name set to the lowercase of the class name.
 """
-
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Example schemas (replace with your own):
+# User profile data
+class Profile(BaseModel):
+    username: str = Field("guest", description="Unique username")
+    full_name: Optional[str] = Field(None, description="Full name")
+    language: str = Field("en", description="Preferred language code")
+    push_notifications: bool = Field(True, description="Receive push notifications")
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+# Course catalog
+class Course(BaseModel):
+    title: str = Field(..., description="Course title")
+    subject: str = Field(..., description="Subject area e.g., Mathematics")
+    description: Optional[str] = Field(None, description="Short description")
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+# Notes created by user
+class Note(BaseModel):
+    username: str = Field("guest", description="Owner username")
+    title: str = Field(..., description="Note title")
+    content: str = Field("", description="Note content")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Daily practice tracking
+class Practice(BaseModel):
+    username: str = Field("guest", description="Username")
+    date: str = Field(..., description="YYYY-MM-DD date string")
+    status: str = Field("completed", description="Practice status")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+# Quiz question and results
+class QuizQuestion(BaseModel):
+    subject: str = Field(..., description="Subject of the question")
+    text: str = Field(..., description="Question text")
+    options: List[str] = Field(..., min_length=2, description="Multiple choice options")
+    correct_index: int = Field(..., ge=0, description="Index of correct option")
+
+class QuizResult(BaseModel):
+    username: str = Field("guest", description="Username")
+    subject: str = Field(..., description="Subject of quiz")
+    total: int = Field(..., ge=1)
+    correct: int = Field(..., ge=0)
+    created_at: Optional[datetime] = None
+
+# Simple notifications
+class Notification(BaseModel):
+    username: str = Field("guest", description="Username to notify or 'guest'")
+    message: str = Field(..., description="Notification message")
+    kind: str = Field("info", description="Type of notification")
